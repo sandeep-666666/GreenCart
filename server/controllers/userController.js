@@ -49,7 +49,7 @@ export const register = async (req, res) => {
   }
 };
 
-//login user controller: .api/user/login
+//login user controller: /api/user/login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;

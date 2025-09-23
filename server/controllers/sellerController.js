@@ -5,9 +5,12 @@ import jwt from "jsonwebtoken";
 export const sellerLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(email, password);
+    // console.log(process.env.SELLER_EMAIL);
+    // console.log(process.env.SELLER_PASSWORD);
     if (
-      password === process.env.SELLER_PASSWORD &&
-      email === process.env.SELLER_EMAIL
+      email === process.env.SELLER_EMAIL &&
+      password === process.env.SELLER_PASSWORD
     ) {
       const token = jwt.sign({ email }, process.env.JWT_SECRET, {
         expiresIn: "7d",

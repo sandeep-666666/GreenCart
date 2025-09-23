@@ -20,7 +20,9 @@ export const AppContextProvider = ({ children }) => {
   //fetch seller status
   const fetchSeller = async () => {
     try {
-      const { data } = await axios.get("/api/seller/is-auth");
+      const { data } = await axios.get("/api/seller/is-auth", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (data.success) {
         setIsSeller(true);
       } else {

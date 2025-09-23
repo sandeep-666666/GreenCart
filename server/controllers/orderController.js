@@ -197,6 +197,7 @@ export const getUserOrders = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Fetched order successfully by userid",
+      orders,
     });
   } catch (error) {
     return res.status(500).json({
@@ -215,15 +216,16 @@ export const getALlOrders = async (req, res) => {
       .populate("items.product address")
       .sort({ createdAt: -1 });
 
-    if (!orders) {
-      return res.status(401).json({
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({
         success: false,
-        message: "Unable to get all the orders",
+        message: "No orders found",
       });
     }
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
       message: "Fetched all the orders successfully",
+      orders: orders || [],
     });
   } catch (error) {
     return res.status(500).json({
