@@ -31,6 +31,13 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
+      enum: [
+        "order placed",
+        "packed",
+        "shipped",
+        "out for delivery",
+        "delivered",
+      ],
       default: "order placed",
     },
     paymentType: {

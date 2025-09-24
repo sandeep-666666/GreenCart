@@ -234,3 +234,18 @@ export const getALlOrders = async (req, res) => {
     });
   }
 };
+
+//update status of order for seller: api/seller/update
+export const updateOrder = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    res.json({ success: true, order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
