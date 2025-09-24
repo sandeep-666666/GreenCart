@@ -1,16 +1,18 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { useAppContext } from "../../Context/AppContext";
+import { assets } from "../../assets/assets";
 import toast from "react-hot-toast";
 const Orders = () => {
-  const [orders, setOrders, axios] = useState([]);
-  const { currency } = useAppContext();
+  const [orders, setOrders] = useState([]);
+  const { currency, axios } = useAppContext();
 
   const fetchOrders = async () => {
     try {
       const { data } = await axios.get("/api/order/seller");
       if (data.success) {
         setOrders(data.orders);
+      } else {
         toast.error(data.message);
       }
     } catch (error) {
@@ -32,14 +34,19 @@ const Orders = () => {
             className="flex flex-col md:items-center md:flex-row gap-5 justify-between p-5 max-w-4xl rounded-md border border-gray-300"
           >
             <div className="flex gap-5 max-w-80">
-              <img
+              {/* <img
                 className="w-12 h-12 object-cover "
                 src={assets.box_icon}
                 alt="boxIcon"
-              />
+              /> */}
               <div>
                 {order.items.map((item, index) => (
                   <div key={index} className="flex flex-col">
+                    <img
+                      className="w-12 h-12 object-cover "
+                      src={item.product.image[0]}
+                      alt="boxIcon"
+                    />
                     <p className="font-medium">
                       {item.product.name}{" "}
                       <span className="text-primary">x {item.quantity}</span>
