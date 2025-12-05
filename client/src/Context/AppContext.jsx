@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-export const AppContext = createContext();
 import axios from "axios";
+
+export const AppContext = createContext();
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
@@ -15,40 +16,36 @@ export const AppContextProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const currency = import.meta.env.VITE_CURRENCY;
   const [cartItems, setcartItems] = useState({});
+  const [wishlistItems, setWishlistItems] = useState({}); // ✅ Wishlist state
   const [searchQuary, setSearchQuary] = useState({});
 
-  //fetch seller status
+  // ✅ Fetch seller status
   const fetchSeller = async () => {
     try {
-      const { data } = await axios.get("/api/seller/is-auth", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (data.success) {
-        setIsSeller(true);
-      } else {
-        setIsSeller(false);
-      }
-    } catch (error) {
+      const { data } = await axios.get("/api/seller/is-auth");
+      setIsSeller(data.success ? true : false);
+    } catch {
       setIsSeller(false);
     }
   };
 
-  //Fetch user-auth status, user data and cart items
+  // ✅ Fetch user-auth status, user data, and cart items
   const fetchUser = async () => {
     try {
       const { data } = await axios.get("/api/user/is-auth", {
-        withCredentials: true, // Ensures cookies are sent with the request
+        withCredentials: true,
       });
       if (data.success) {
         setUser(data.user);
-        setcartItems(data.user.cartItems);
+        setcartItems(data.user.cartItems || {});
+        setWishlistItems(data.user.wishlistItems || {}); // ✅ Load wishlist from backend if available
       }
-    } catch (error) {
+    } catch {
       setUser(null);
     }
   };
 
-  //fetch all product
+  // ✅ Fetch all products
   const fetchProducts = async () => {
     try {
       const { data } = await axios.get("/api/product/list");
@@ -62,20 +59,15 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
-  //add product to cart
+  // ✅ Add product to cart
   const addToCart = (itemId) => {
     let cartData = structuredClone(cartItems);
-    if (cartData[itemId]) {
-      cartData[itemId] += 1;
-    } else {
-      cartData[itemId] = 1;
-    }
+    cartData[itemId] = (cartData[itemId] || 0) + 1;
     setcartItems(cartData);
     toast.success("Added to Cart");
   };
 
-  //update cart item quantity
-
+  // ✅ Update cart item quantity
   const updateCartItem = (itemId, quantity) => {
     let cartData = structuredClone(cartItems);
     cartData[itemId] = quantity;
@@ -83,62 +75,91 @@ export const AppContextProvider = ({ children }) => {
     toast.success("Cart Updated");
   };
 
-  //remove product from cart
+  // ✅ Remove product from cart
   const removeFromCart = (itemId) => {
     let cartData = structuredClone(cartItems);
     if (cartData[itemId]) {
       cartData[itemId] -= 1;
-      if (cartData[itemId] === 0) {
-        delete cartData[itemId];
-      }
+      if (cartData[itemId] === 0) delete cartData[itemId];
     }
-    toast.success("Removed from Cart");
     setcartItems(cartData);
+    toast.success("Removed from Cart");
   };
 
-  //get cart item count
+  // ✅ Add product to wishlist
+  const addToWishlist = (itemId) => {
+    let wishlistData = structuredClone(wishlistItems);
+    wishlistData[itemId] = true;
+    setWishlistItems(wishlistData);
+    toast.success("Added to Wishlist 💖");
+  };
+
+  // ✅ Remove product from wishlist
+  const removeFromWishlist = (itemId) => {
+    let wishlistData = structuredClone(wishlistItems);
+    delete wishlistData[itemId];
+    setWishlistItems(wishlistData);
+    toast.success("Removed from Wishlist 💔");
+  };
+
+  // ✅ Get wishlist count
+  const getWishlistCount = () => {
+    return Object.keys(wishlistItems).length;
+  };
+
+  // ✅ Get cart item count
   const getCartCount = () => {
     let totalCount = 0;
-    for (const item in cartItems) {
-      totalCount += cartItems[item];
-    }
+    for (const item in cartItems) totalCount += cartItems[item];
     return totalCount;
   };
 
-  //Get total cart amount
+  // ✅ Get total cart amount
   const getCartAmount = () => {
     let totalAmount = 0;
-    for (const items in cartItems) {
-      let itemInfo = products.find((product) => product._id === items);
-      if (cartItems[items] > 0) {
-        totalAmount += itemInfo.offerPrice * cartItems[items];
+    for (const id in cartItems) {
+      let itemInfo = products.find((product) => product._id === id);
+      if (itemInfo && cartItems[id] > 0) {
+        totalAmount += itemInfo.offerPrice * cartItems[id];
       }
     }
     return Math.floor(totalAmount * 100) / 100;
   };
 
+  // ✅ Initial data load
   useEffect(() => {
     fetchUser();
     fetchSeller();
     fetchProducts();
   }, []);
 
-  //update database cart items
+  // ✅ Update database cart items
   useEffect(() => {
     const updateCart = async () => {
       try {
         const { data } = await axios.post("/api/cart/update", { cartItems });
-        if (!data.success) {
-          toast.error(data.message);
-        }
+        if (!data.success) toast.error(data.message);
       } catch (error) {
         toast.error(error.message);
       }
     };
-    if (user) {
-      updateCart();
-    }
+    if (user) updateCart();
   }, [cartItems]);
+
+  // ✅ Update wishlist in backend whenever it changes (optional)
+  useEffect(() => {
+    const updateWishlist = async () => {
+      try {
+        const { data } = await axios.post("/api/user/wishlist", {
+          wishlistItems,
+        });
+        if (!data.success) toast.error(data.message);
+      } catch (error) {
+        console.log(error.message);
+      }
+    };
+    if (user) updateWishlist();
+  }, [wishlistItems]);
 
   const value = {
     navigate,
@@ -156,6 +177,11 @@ export const AppContextProvider = ({ children }) => {
     addToCart,
     updateCartItem,
     removeFromCart,
+    wishlistItems, // ✅ Added
+    setWishlistItems, // ✅ Added
+    addToWishlist, // ✅ Added
+    removeFromWishlist, // ✅ Added
+    getWishlistCount, // ✅ Added
     searchQuary,
     setSearchQuary,
     getCartCount,
@@ -163,9 +189,8 @@ export const AppContextProvider = ({ children }) => {
     axios,
     fetchProducts,
   };
+
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
-export const useAppContext = () => {
-  return useContext(AppContext);
-};
+export const useAppContext = () => useContext(AppContext);

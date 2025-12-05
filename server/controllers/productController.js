@@ -107,3 +107,28 @@ export const changeStock = async (req, res) => {
     });
   }
 };
+
+// Controller: productCategory
+export const productCategory = async (req, res) => {
+  try {
+    const categories = await Product.distinct("category"); // fetch unique categories
+    if (!categories.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No product categories found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Product categories fetched successfully",
+      categories,
+    });
+  } catch (error) {
+    console.log("Error while fetching product categories:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

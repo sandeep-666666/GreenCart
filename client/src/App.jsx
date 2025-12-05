@@ -19,6 +19,8 @@ import AddProduct from "./Pages/seller/AddProduct";
 import ProductList from "./Pages/seller/ProductList";
 import Orders from "./Pages/seller/Orders";
 import Loading from "./Components/Loading";
+import Wishlist from "./Pages/Wishlist";
+
 const App = () => {
   const isSellerpath = useLocation().pathname.includes("seller");
   const { showUserLogin, isSeller } = useAppContext();
@@ -36,10 +38,10 @@ const App = () => {
           <Route path="/products/:category" element={<ProductCategory />} />
           <Route path="/products/:category/:id" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/add-address" element={<AddAddress />} />
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/loader" element={<Loading />} />
-
           <Route
             path="/seller"
             element={isSeller ? <SellerLayout /> : <SellerLogin />}

@@ -25,14 +25,11 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, password: hashedPassword });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     res.cookie("token", token, {
       httpOnly: true, //prevent js to access the cookie
       secure: process.env.NODE_ENV === "production", //use secure cookie in production
       sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict", //CSRF protection
-      maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiration time
     });
 
     return res.status(201).json({
@@ -74,14 +71,11 @@ export const login = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(201).json({
